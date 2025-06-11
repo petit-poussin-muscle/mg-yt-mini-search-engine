@@ -49,9 +49,13 @@ async function init() {
 function doSearch() {
   const raw = document.getElementById('q').value;
   const trimmed = raw.trim();
-  if (trimmed.length < 1) return;
+  if (trimmed.length < 1) {
+    document.getElementById('result-count').textContent = '';
+    document.getElementById('results').innerHTML = '';
+    return;
+  }
 
-  // Split mots-clés par espaces, normaliser
+  // Split mots-clefs par espaces, normaliser
   const tokens = trimmed.split(/\s+/).map(normalize).filter(t => t);
 
   const scope      = document.querySelector('input[name="scope"]:checked').value;
@@ -75,10 +79,13 @@ function doSearch() {
   display(results);
 }
 
-// Fonction d’affichage des résultats
+// Fonction d’affichage des résultats et du total
 function display(results) {
   const container = document.getElementById('results');
+  const countEl = document.getElementById('result-count');
   container.innerHTML = '';
+  countEl.textContent = `${results.length} résultat${results.length > 1 ? 's' : ''}`;
+
   if (results.length === 0) {
     container.textContent = 'Aucun résultat.';
     return;
