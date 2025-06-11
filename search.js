@@ -41,7 +41,7 @@ async function init() {
     el.addEventListener('change', () => doSearch())
   );
 
-  // Recherche initiale (aucun résultat tant que 0 char)
+  // Recherche initiale (0 char -> aucun résultat)
   doSearch();
 }
 
@@ -49,31 +49,27 @@ async function init() {
 function doSearch() {
   const raw = document.getElementById('q').value;
   const trimmed = raw.trim();
-  const q = normalize(trimmed);
+  if (trimmed.length < 1) return;
 
-  const container = document.getElementById('results');
-  container.innerHTML = '';
-
-  // Affiche à partir du premier caractère
-  if (trimmed.length < 1) {
-    return;
-  }
+  // Split mots-clés par espaces, normaliser
+  const tokens = trimmed.split(/\s+/).map(normalize).filter(t => t);
 
   const scope      = document.querySelector('input[name="scope"]:checked').value;
   const liveFilter = document.querySelector('input[name="liveFilter"]:checked').value;
 
   const results = docs.filter(doc => {
-    // Filtre live
+    // filtre live
     if (liveFilter === 'onlyLive' && !doc.live) return false;
     if (liveFilter === 'noLive'   &&  doc.live) return false;
 
-    // Matching selon le scope
-    const inTitle = doc.normalizedTitle.some(kw => kw.includes(q));
-    const inBody  = doc.normalizedBody.some(kw => kw.includes(q));
-
-    if (scope === 'title') return inTitle;
-    if (scope === 'body')  return inBody;
-    return inTitle || inBody;
+    // pour chaque token, vérifier qu'il est contenu selon le scope
+    return tokens.every(token => {
+      const inTitle = doc.normalizedTitle.some(kw => kw.includes(token));
+      const inBody  = doc.normalizedBody.some(kw => kw.includes(token));
+      if (scope === 'title') return inTitle;
+      if (scope === 'body')  return inBody;
+      return inTitle || inBody;
+    });
   });
 
   display(results);
@@ -82,6 +78,7 @@ function doSearch() {
 // Fonction d’affichage des résultats
 function display(results) {
   const container = document.getElementById('results');
+  container.innerHTML = '';
   if (results.length === 0) {
     container.textContent = 'Aucun résultat.';
     return;
