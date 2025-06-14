@@ -12,15 +12,17 @@
     a { color: #1e90ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .container { max-width: 600px; margin: 0 auto; padding: 2em 1em; }
-    #search-form { display: flex; flex-direction: column; gap: 1em; margin-bottom: 2em; }
+    #search-form { display: flex; flex-direction: column; gap: 1em; margin-bottom: 1em; }
     fieldset { border: 1px solid #444; padding: 0.5em; }
     legend { padding: 0 0.5em; font-weight: bold; }
     label { display: block; margin: 0.2em 0; }
     #q { width: 100%; padding: 0.5em; font-size: 1em; border: 1px solid #444; border-radius: 4px; background-color: #111; color: #fff; }
+    .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+    #result-count { color: #ccc; font-size: 0.9em; }
+    select { padding: 0.3em; font-size: 0.9em; background: #111; color: #fff; border: 1px solid #444; border-radius: 4px; }
     .result { display: flex; align-items: center; background-color: #111; border: 1px solid #333; border-radius: 4px; padding: 0.5em; margin-bottom: 1em; }
     .result img { width: 120px; height: 90px; object-fit: cover; margin-right: 1em; border: 1px solid #333; }
     .result p { margin: 0.2em 0 0 0; font-size: 0.9em; color: #ccc; }
-    #result-count { color: #ccc; margin-bottom: 1em; font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -45,17 +47,28 @@
       <input id="q" type="text" placeholder="Tapez vos mots-clefs…">
     </form>
 
-    <div id="result-count"></div>
+    <div class="controls">
+      <div id="result-count"></div>
+      <select id="sort">
+        <option value="date_desc" selected>Date ↓</option>
+        <option value="date_asc">Date ↑</option>
+        <option value="duration_desc">Durée ↓</option>
+        <option value="duration_asc">Durée ↑</option>
+        <option value="title_desc">Nom ↓</option>
+        <option value="title_asc">Nom ↑</option>
+      </select>
+    </div>
+
     <div id="results"></div>
   </div>
 
   <script>
-    fetch('data/index-min.json')
+    // Chargement date et compteur
+    fetch('data/index-min.json', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
-        const d = new Date(data.updated);
-        document.getElementById('updated-date').textContent =
-          d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const d = new Date(data.updated + 'T00:00:00');
+        document.getElementById('updated-date').textContent = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('video-count').textContent = data.docs.length;
       });
   </script>

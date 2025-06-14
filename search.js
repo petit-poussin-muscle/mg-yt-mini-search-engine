@@ -25,7 +25,7 @@ function formatDuration(sec) {
 
 // Initialisation : chargement des données et écouteurs
 async function init() {
-  const payload = await fetch('data/index-min.json').then(r => r.json());
+  const payload = await fetch('data/index-min.json', { cache: 'no-store' }).then(r => r.json());
   docs = payload.docs.map(doc => ({
     ...doc,
     normalizedTitle: doc.title.map(normalize),
@@ -33,7 +33,10 @@ async function init() {
   }));
 
   // Recherche en temps réel dès le premier caractère
-  document.getElementById('q').addEventListener('input', () => doSearch());
+  const qEl = document.getElementById('q');
+  const sortEl = document.getElementById('sort');
+  qEl.addEventListener('input', () => doSearch());
+  sortEl.addEventListener('change', () => doSearch());
   document.querySelectorAll('input[name="scope"]').forEach(el =>
     el.addEventListener('change', () => doSearch())
   );
@@ -45,7 +48,7 @@ async function init() {
   doSearch();
 }
 
-// Fonction de recherche et application des filtres
+// Fonction de recherche et application des filtres + tri
 function doSearch() {
   const raw = document.getElementById('q').value;
   const trimmed = raw.trim();
@@ -60,8 +63,9 @@ function doSearch() {
 
   const scope      = document.querySelector('input[name="scope"]:checked').value;
   const liveFilter = document.querySelector('input[name="liveFilter"]:checked').value;
+  const sortVal    = document.getElementById('sort').value;
 
-  const results = docs.filter(doc => {
+  let results = docs.filter(doc => {
     // filtre live
     if (liveFilter === 'onlyLive' && !doc.live) return false;
     if (liveFilter === 'noLive'   &&  doc.live) return false;
@@ -74,6 +78,19 @@ function doSearch() {
       if (scope === 'body')  return inBody;
       return inTitle || inBody;
     });
+  });
+
+  // Tri
+  results.sort((a, b) => {
+    switch (sortVal) {
+      case 'date_asc':    return new Date(a.at) - new Date(b.at);
+      case 'date_desc':   return new Date(b.at) - new Date(a.at);
+      case 'duration_asc': return a.duration - b.duration;
+      case 'duration_desc':return b.duration - a.duration;
+      case 'title_asc':   return a.title_raw.localeCompare(b.title_raw);
+      case 'title_desc':  return b.title_raw.localeCompare(a.title_raw);
+      default:            return 0;
+    }
   });
 
   display(results);
@@ -94,7 +111,7 @@ function display(results) {
   results.forEach(doc => {
     const videoUrl = `https://www.youtube.com/watch?v=${doc.id}`;
     const thumbnail = `https://i.ytimg.com/vi/${doc.id}/hqdefault.jpg`;
-    const dateStr = new Date(doc.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dateStr = new Date(doc.at + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     const dur = formatDuration(doc.duration);
 
     const div = document.createElement('div');
