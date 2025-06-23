@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Petit Poussin Musclé - À propos</title>
+  <!-- Favicon -->
+  <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
+  <style>
+    /* ==== BOX-SIZING GLOBAL ==== */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background-color: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; }
+    a { color: #1e90ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2em 1em; }
+    nav.main-menu { margin-bottom: 2em; }
+    nav.main-menu a { margin-right: 1em; }
+    nav.section-menu { background: #111; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
+    nav.section-menu ul { list-style: none; padding: 0; margin: 0; }
+    nav.section-menu li { margin: 0.5em 0; }
+    h1, h2 { color: #fff; }
+    h2 { margin-top: 1.5em; }
+    p { line-height: 1.6; margin: 0.8em 0; color: #ccc; }
+    code { background: #111; padding: 0.2em 0.4em; border-radius: 4px; color: #1e90ff; }
+    pre { background: #111; padding: 1em; border-radius: 4px; overflow-x: auto; color: #ccc; }
+    .main-menu{ text-align: center;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="main-menu">
+      <a href="index.html">Recherche classique</a>
+      <a href="questions.html">Recherche de questions</a>
+      <a href="about.html">À propos</a>
+    </nav>
+
+    <h1>À propos de Petit Poussin Musclé</h1>
+
+    <nav class="section-menu">
+      <ul>
+        <li><a href="#qui">Qui je suis ?</a></li>
+        <li><a href="#rythme">Rythme des mises à jour</a></li>
+        <li><a href="#github">Pourquoi utiliser GitHub ?</a></li>
+        <li><a href="#scripts">Pourquoi ne pas publier les scripts ?</a></li>
+        <li><a href="#opensource">Code open source</a></li>
+        <li><a href="#processus">Processus d'extraction</a></li>
+        <li><a href="#traitement">Traitement du texte</a></li>
+        <li><a href="#timecode">Timecode approximatif</a></li>
+        <li><a href="#notfound">Timecode non trouvé</a></li>
+        <li><a href="#notimecode">Pas d'information relative au timecode</a></li>
+        <li><a href="#rediffusions">Exclusion des rediffusions</a></li>
+        <li><a href="#exemple">Exemple de sortie Audio-Texte</a></li>
+      </ul>
+    </nav>
+
+    <h2 id="qui">Qui je suis ?</h2>
+    <p>Je travaille dans l'informatique depuis très longtemps et je suis tombé amoureux de la musculation il y a environ 10 ans. J'ai décidé, bénévolement, de créer ce moteur de recherche par mots-clés pour aider les membres premium de la chaîne de Michael D. Gundill à trouver facilement les informations de sa chaîne. Au début, c'était pour un usage personnel, puis j'ai pensé que le partager avec tout le monde était une bonne idée.</p>
+
+    <h2 id="rythme">Rythme des mises à jour</h2>
+    <p>Cela dépend du temps libre dont je dispose et de l'ampleur des modifications à apporter.</p>
+
+    <h2 id="github">Pourquoi utiliser GitHub ?</h2>
+    <p>GitHub est gratuit et fiable.</p>
+
+    <h2 id="scripts">Pourquoi ne pas publier directement les scripts des vidéos ?</h2>
+    <p>L'accès à ces vidéos est privé ; les rendre publics reviendrait à du vol de contenu.</p>
+
+    <h2 id="opensource">Open source du code</h2>
+    <p>Non, je n'ai pas envie 🙂. De nombreuses sous-tâches sont manuelles et je ne souhaite pas perdre de temps à tout expliquer. Cependant, je décris brièvement comment je procède, libre à vous de reproduire.</p>
+
+    <h2 id="processus">Processus d'extraction des données</h2>
+    <p>J'utilise d'abord <code>openai/whisper-large-v3</code> pour convertir l'audio en texte, avec les paramètres suivants : <code>num_beams: 5</code>, <code>temperature: 0.7</code>, <code>max_new_tokens: 256</code>, <code>no_repeat_ngram_size: 5</code>. Cela prend environ une journée sur ma RTX 4090 pour 700 vidéos. Ce choix est motivé par la gratuité et la performance ; les autres solutions sont payantes, et mon porte‑feuille est limité, les suppléments ont un coût, hein 😉</p>
+
+    <h2 id="traitement">Traitement du texte et extraction de questions</h2>
+    <p>Une fois le texte obtenu, j'utilise deux extracteurs de tokens (mots) : l'un pour les mots génériques, l'autre pour les noms propres. Je sélectionne les termes les plus fréquents (top k), le nombre variant selon la longueur de la vidéo.</p>
+    <p>Initialement, j'avais un traitement LLM pour corriger les fautes, mais cela générait plus d'erreurs qu'il n'en corrigeait et prenait trop de temps. Je réévaluerai son utilisation plus tard.</p>
+    <p>Pour les questions, je relis toutes celles générées par l'algorithme et n'en conserve que les plus claires et fais des corrections manuelles. Beaucoup disparaissent ou sont incompréhensibles sans vérification manuelle, ce qui est chronophage.</p>
+    <p>J'utilise le point d'interrogation pour déterminer si un texte contient une question. </p>
+
+    <h2 id="timecode">Timecode approximatif</h2>
+    <p>Parfois, le timecode généré ne correspond pas exactement à la question, car celle-ci peut se trouver au milieu d'un texte long. Je dois alors ajuster manuellement le timecode en choisissant un nombre approximatif pour indiquer le début réel de la question.</p>
+
+    <h2 id="notfound">Timecode non trouvé</h2>
+    <p>Il peut arriver qu'il y ait une incohérence entre la génération de texte et l'extraction des mots-clés par IA : le mot-clé recherché est bien présent dans la vidéo, mais sa position n'a pas pu être déterminée.</p>
+
+    <h2 id="notimecode">Pas d'information relative au timecode</h2>
+    <p>Le mot-clé recherché n'a pas été sélectionné pour cette vidéo et figure uniquement dans le titre de la vidéo.</p>
+    
+    <h2 id="rediffusions">Exclusion des rediffusions</h2>
+    <p>Les rediffusions et les lives sont identiques, à l’exception d’un cas où Michael a publié une vidéo séparée : dans ce cas, la rediffusion inclut à la fois le live et la vidéo séparée. Il est donc inutile d’inclure les rediffusions, ce qui permet de gagner en place et en performance, CQFD.</p>
+
+    <h2 id="exemple">Exemple de sortie Audio-Texte de bonne qualité</h2>
+    <pre><code> {
+      "start": 240.0,
+      "end": 301.6,
+      "text": "d\u00e9j\u00e0 alors il pouvait pousser encore je sais pas combien mais bon quand \u00e7a a p\u00e9t\u00e9 c'\u00e9tait spectaculaire donc la cha\u00eene j'avais donn\u00e9 le nom du gars mais bon en fait il y a 3-4 vid\u00e9os \u00e0 regarder c'est tout je pensais qu'il y en aurait beaucoup plus parce qu'il dit qu'il avait interview\u00e9 des mecs et tout puis j'ai pas vu enfin c'\u00e9tait avant la blessure pas apr\u00e8s donc \u00e7a limite un peu la port\u00e9e ... ... ... ... ...... ... ... ... ... .. ... ... ... ... . .. ... . . .. ... . ... . . .. . . ... . . . . . .. . .. . . . . ... . .. . . .. . ... . . !!!!. . . . . !!!! . . !!!!! . !!!!. !!!!. !!!!!!. . !!!!. , . !!!!. I !!!!. I I I I I !!!!. !!!!! . !!!!!!!!. I I I IIIIIIIII !!!!!!!!. !!!!!!!!. !!!!. I IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIiiiiIIIIIIIIiIIIIIIIIIOIIIIIIII . . !!!!!!!! !!!! . !!!!. ! . . . . , . . . !!!!!!!!. !!!!!. !!!!!!!!. ! iiiiiiiiiiiiiiiiiiiiiiiiiiiiiii iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii donc je vais essayer de retrouver les questions qu'on m'avait demand\u00e9 alors je ne sais m\u00eame plus comment je fais, j'aurais du pr\u00e9parer le truc enfin c'\u00e9tait essentiellement pour voir si \u00e7a comment les choses marchaient alors rien direct, la pub normalement vous n'avez pas de pub ce qui permettra de remettre de la musique sur les vid\u00e9os d'entra\u00eenement."
+    },</code></pre>
+  </div>
+</body>
+</html>

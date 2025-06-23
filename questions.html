@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Petit Poussin Musclé</title>
+  <title>Petit Poussin Musclé - Recherche de Questions</title>
   <!-- Favicon -->
   <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
   <style>
@@ -22,7 +22,7 @@
     .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
     #result-count { color: #ccc; font-size: 0.9em; }
     select { padding: 0.3em; font-size: 0.9em; background: #111; color: #fff; border: 1px solid #444; border-radius: 4px; }
-    .result { display: flex; align-items: center; background-color: #111; border: 1px solid #333; border-radius: 4px; padding: 0.5em; margin-bottom: 1em; }
+    .result { display: flex; align-items: center; background-color: #333; border-radius: 4px; padding: 0.5em; margin-bottom: 1em; }
     .result img { width: 120px; height: 90px; object-fit: cover; margin-right: 1em; border: 1px solid #333; }
     .result p { margin: 0.2em 0 0 0; font-size: 0.9em; color: #ccc; }
     .main-menu{ text-align: center;}
@@ -35,29 +35,11 @@
       <a href="questions.html">Recherche de questions</a>
       <a href="about.html">À propos</a>
     </nav>
-    <h2>Mise à jour le <span id="updated-date">...</span> — <span id="video-count">0</span> vidéos</h2>
+    <h2>Mise à jour le <span id="updated-date">...</span> — <span id="video-count">0</span> questions</h2>
 
     <form id="search-form" onsubmit="return false;">
-      <fieldset>
-        <legend>Scope de recherche</legend>
-        <label><input type="radio" name="scope" value="all" checked> Titre + Contenu</label>
-        <label><input type="radio" name="scope" value="title"> Titre seul</label>
-        <label><input type="radio" name="scope" value="body"> Contenu seul</label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Type de vidéo</legend>
-        <label><input type="radio" name="liveFilter" value="all" checked> Tous</label>
-        <label><input type="radio" name="liveFilter" value="onlyLive"> Seulement live</label>
-        <label><input type="radio" name="liveFilter" value="noLive"> Sans live</label>
-      </fieldset>
-
-      <label>
-        <input type="checkbox" id="show-timecodes" checked>
-        Afficher les timecodes des mots-clés
-      </label>
-
-      <input id="q" type="text" placeholder="Tapez vos mots-clefs…">
+      <label for="q">Recherche :</label>
+      <input type="text" id="q" placeholder="Tapez vos mots-clés…">
     </form>
 
     <div class="controls">
@@ -67,8 +49,8 @@
         <option value="date_asc">Date ↑</option>
         <option value="duration_desc">Durée ↓</option>
         <option value="duration_asc">Durée ↑</option>
-        <option value="title_desc">Nom ↓</option>
-        <option value="title_asc">Nom ↑</option>
+        <option value="question_desc">Questions ↓</option>
+        <option value="question_asc">Questions ↑</option>
       </select>
     </div>
 
@@ -76,22 +58,16 @@
   </div>
 
   <script>
-    // Charger mises à jour et compteur à partir des deux JSON et calculer la date la plus récente
-    Promise.all([
-      fetch('data/index-live-min.json', { cache: 'no-store' }).then(r => r.json()),
-      fetch('data/index-nonlive-min.json', { cache: 'no-store' }).then(r => r.json())
-    ]).then(([liveData, nonliveData]) => {
-      const dateLive = new Date(liveData.updated);
-      const dateNon = new Date(nonliveData.updated);
-      const latest = dateLive > dateNon ? dateLive : dateNon;
-      document.getElementById('updated-date').textContent = latest.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-
-      const total = (liveData.docs?.length || 0) + (nonliveData.docs?.length || 0);
-      document.getElementById('video-count').textContent = total;
-    }).catch(err => {
-      console.error('Erreur chargement des JSON :', err);
-    });
+    // Chargement date et compteur pour questions
+    fetch('data/questions-min.json', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        const d = new Date(data.updated);
+        document.getElementById('updated-date').textContent =
+          d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('video-count').textContent = data.docs.length;
+      });
   </script>
-  <script src="search.js"></script>
+  <script src="questions-search.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 // search.js
 
 let docs = [];
+let currentTokens = []; // pour stocker les mots-clés de recherche
 
 // Fonction de normalisation (casse + accents)
 function normalize(str) {
@@ -25,111 +26,147 @@ function formatDuration(sec) {
 
 // Initialisation : chargement des données et écouteurs
 async function init() {
-  const payload = await fetch('data/index-min.json', { cache: 'no-store' }).then(r => r.json());
-  docs = payload.docs.map(doc => ({
+  const [liveData, nonliveData] = await Promise.all([
+    fetch('data/index-live-min.json', { cache: 'no-store' }).then(r => r.json()),
+    fetch('data/index-nonlive-min.json', { cache: 'no-store' }).then(r => r.json())
+  ]);
+
+  docs = [
+    ...liveData.docs.map(doc => ({ ...doc, live: true })),
+    ...nonliveData.docs.map(doc => ({ ...doc, live: false }))
+  ].map(doc => ({
     ...doc,
-    normalizedTitle: doc.title.map(normalize),
-    normalizedBody:  doc.body.map(normalize)
+    normalizedTitle: normalize(doc.t).split(/\s+/).filter(Boolean),
+    normalizedBody: doc.b.map(item => normalize(Object.keys(item)[0]))
   }));
 
-  // Recherche en temps réel dès le premier caractère
   const qEl = document.getElementById('q');
   const sortEl = document.getElementById('sort');
-  qEl.addEventListener('input', () => doSearch());
-  sortEl.addEventListener('change', () => doSearch());
-  document.querySelectorAll('input[name="scope"]').forEach(el =>
-    el.addEventListener('change', () => doSearch())
-  );
-  document.querySelectorAll('input[name="liveFilter"]').forEach(el =>
-    el.addEventListener('change', () => doSearch())
-  );
+  const showTCEl = document.getElementById('show-timecodes');
 
-  // Recherche initiale (0 char -> aucun résultat)
+  qEl.addEventListener('input', doSearch);
+  sortEl.addEventListener('change', doSearch);
+  document.querySelectorAll('input[name="scope"]').forEach(el => el.addEventListener('change', doSearch));
+  document.querySelectorAll('input[name="liveFilter"]').forEach(el => el.addEventListener('change', doSearch));
+  showTCEl.addEventListener('change', doSearch);
+
   doSearch();
 }
 
-// Fonction de recherche et application des filtres + tri
+// Recherche + filtres + tri
 function doSearch() {
-  const raw = document.getElementById('q').value;
-  const trimmed = raw.trim();
-  if (trimmed.length < 1) {
+  const raw = document.getElementById('q').value.trim();
+  if (!raw) {
     document.getElementById('result-count').textContent = '';
     document.getElementById('results').innerHTML = '';
+    currentTokens = [];
     return;
   }
-
-  // Split mots-clefs par espaces, normaliser
-  const tokens = trimmed.split(/\s+/).map(normalize).filter(t => t);
-
-  const scope      = document.querySelector('input[name="scope"]:checked').value;
+  currentTokens = raw.split(/\s+/).map(normalize).filter(Boolean);
+  const scope = document.querySelector('input[name="scope"]:checked').value;
   const liveFilter = document.querySelector('input[name="liveFilter"]:checked').value;
-  const sortVal    = document.getElementById('sort').value;
+  const sortVal = document.getElementById('sort').value;
 
   let results = docs.filter(doc => {
-    // filtre live
     if (liveFilter === 'onlyLive' && !doc.live) return false;
-    if (liveFilter === 'noLive'   &&  doc.live) return false;
-
-    // pour chaque token, vérifier qu'il est contenu selon le scope
-    return tokens.every(token => {
+    if (liveFilter === 'noLive' && doc.live) return false;
+    return currentTokens.every(token => {
       const inTitle = doc.normalizedTitle.some(kw => kw.includes(token));
-      const inBody  = doc.normalizedBody.some(kw => kw.includes(token));
+      const inBody = doc.normalizedBody.some(kw => kw.includes(token));
       if (scope === 'title') return inTitle;
-      if (scope === 'body')  return inBody;
+      if (scope === 'body') return inBody;
       return inTitle || inBody;
     });
   });
 
-  // Tri
   results.sort((a, b) => {
     switch (sortVal) {
-      case 'date_asc':    return new Date(a.at) - new Date(b.at);
-      case 'date_desc':   return new Date(b.at) - new Date(a.at);
-      case 'duration_asc': return a.duration - b.duration;
-      case 'duration_desc':return b.duration - a.duration;
-      case 'title_asc':   return a.title_raw.localeCompare(b.title_raw);
-      case 'title_desc':  return b.title_raw.localeCompare(a.title_raw);
-      default:            return 0;
+      case 'date_asc': return new Date(a.at) - new Date(b.at);
+      case 'date_desc': return new Date(b.at) - new Date(a.at);
+      case 'duration_asc': return a.d - b.d;
+      case 'duration_desc': return b.d - a.d;
+      case 'title_asc': return a.t.localeCompare(b.t);
+      case 'title_desc': return b.t.localeCompare(a.t);
+      default: return 0;
     }
   });
 
   display(results);
 }
 
-// Fonction d’affichage des résultats et du total
+// Affichage des résultats
 function display(results) {
   const container = document.getElementById('results');
-  const countEl = document.getElementById('result-count');
   container.innerHTML = '';
-  countEl.textContent = `${results.length} résultat${results.length > 1 ? 's' : ''}`;
+  document.getElementById('result-count').textContent = `${results.length} résultat${results.length > 1 ? 's' : ''}`;
 
-  if (results.length === 0) {
+  if (!results.length) {
     container.textContent = 'Aucun résultat.';
     return;
   }
 
-  results.forEach(doc => {
-    const videoUrl = `https://www.youtube.com/watch?v=${doc.id}`;
-    const thumbnail = `https://i.ytimg.com/vi/${doc.id}/hqdefault.jpg`;
-    const dateStr = new Date(doc.at + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    const dur = formatDuration(doc.duration);
+  const showTC = document.getElementById('show-timecodes').checked;
 
+  results.forEach(doc => {
+    const videoUrl = `https://www.youtube.com/watch?v=${doc.i}`;
+    const thumbnail = `https://i.ytimg.com/vi/${doc.i}/hqdefault.jpg`;
+    const dateStr = new Date(doc.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dur = formatDuration(doc.d);
+
+    // Conteneur principal en bloc
     const div = document.createElement('div');
     div.className = 'result';
-    div.innerHTML = `
-      <a href="${videoUrl}" target="_blank">
-        <img src="${thumbnail}" alt="Miniature">
-      </a>
-      <div>
-        <a href="${videoUrl}" target="_blank">
-          <strong>${doc.title_raw}</strong>
-        </a>
-        <p>${dur} · Publié le ${dateStr}</p>
-      </div>
-    `;
+    div.style.display = 'block';
+    div.style.marginBottom = '1em';
+
+    // Wrapper flex pour image + info
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+
+    const imgLink = document.createElement('a');
+    imgLink.href = videoUrl;
+    imgLink.target = '_blank';
+    const img = document.createElement('img');
+    img.src = thumbnail;
+    img.alt = 'Miniature';
+    img.style.width = '120px';
+    img.style.height = '90px';
+    img.style.objectFit = 'cover';
+    imgLink.appendChild(img);
+
+    const info = document.createElement('div');
+    info.style.marginLeft = '1em';
+    info.innerHTML = `<a href="${videoUrl}" target="_blank"><strong>${doc.t}</strong></a><p>${dur} · Publié le ${dateStr}</p>`;
+
+    wrapper.appendChild(imgLink);
+    wrapper.appendChild(info);
+    div.appendChild(wrapper);
+
+    // Timecodes sous le wrapper, une ligne par mot-clé
+    if (showTC && doc.b?.length) {
+      const filtered = doc.b.filter(item => normalize(Object.keys(item)[0]).startsWith(
+        currentTokens.find(tok => normalize(Object.keys(item)[0]).startsWith(tok))
+      ));
+      filtered.forEach(item => {
+        const kw = Object.keys(item)[0];
+        const timesArr = item[kw];
+        // Création des liens pour chaque timecode
+        const links = timesArr.length > 0 ? timesArr.map(t => {
+          const disp = formatDuration(t);
+          return `<a href="${videoUrl}&t=${t}" target="_blank">${disp}</a>`;
+        }).join(', ') : 'timecode non trouvé';
+        const p = document.createElement('p');
+        p.className = 'timecodes';
+        p.style.margin = '0.3em 0 0 2.5em'; // indent sous wrapper
+        // Afficher le mot-clé suivi des liens (pas de crochets)
+        p.innerHTML = `${kw} : ${links}`;
+        div.appendChild(p);
+      });
+    }
+
     container.appendChild(div);
   });
 }
 
-// Lancement de l’application
 init();
