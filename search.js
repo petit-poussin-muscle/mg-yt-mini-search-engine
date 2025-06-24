@@ -154,7 +154,7 @@ function display(results) {
         // Création des liens pour chaque timecode
         const links = timesArr.length > 0 ? timesArr.map(t => {
           const disp = formatDuration(t);
-          return `<a href="${videoUrl}&t=${t}" target="_blank">${disp}</a>`;
+          return `<a href="${videoUrl}&t=${t}s" target="_blank">${disp}</a>`;
         }).join(', ') : 'timecode non trouvé';
         const p = document.createElement('p');
         p.className = 'timecodes';

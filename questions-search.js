@@ -96,7 +96,7 @@ function display(results) {
 
   results.forEach(doc => {
     // Lien YouTube incluant le timestamp t pour démarrer à la question
-    const videoUrl = `https://www.youtube.com/watch?v=${doc.i}&t=${doc.s}`;
+    const videoUrl = `https://www.youtube.com/watch?v=${doc.i}&t=${doc.s}s`;
     const thumb    = `https://i.ytimg.com/vi/${doc.i}/hqdefault.jpg`;
     const dateStr  = new Date(doc.at)
                         .toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
