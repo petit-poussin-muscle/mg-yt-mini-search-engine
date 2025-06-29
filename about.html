@@ -3,17 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Petit Poussin Musclé - À propos</title>
-  <!-- Favicon -->
   <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
-  <script>
-    (function loadCSS() {
-      const ts = Date.now();
-      const link = document.createElement('link');
-      link.rel  = 'stylesheet';
-      link.href = `default.css?cb=${ts}`;
-      document.head.appendChild(link);
-    })();
-  </script>
+  <link rel="stylesheet" href="default.css?rev={{ site.time | date: '%Y%m%d%H%M%S' }}">
 </head>
 <body>
   <div class="container">
