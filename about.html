@@ -5,32 +5,24 @@
   <title>Petit Poussin Musclé - À propos</title>
   <!-- Favicon -->
   <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
-  <style>
-    /* ==== BOX-SIZING GLOBAL ==== */
-    *, *::before, *::after { box-sizing: border-box; }
-    body { background-color: #000; color: #fff; font-family: Arial, sans-serif; margin: 0; }
-    a { color: #1e90ff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .container { max-width: 800px; margin: 0 auto; padding: 2em 1em; }
-    nav.main-menu { margin-bottom: 2em; }
-    nav.main-menu a { margin-right: 1em; }
-    nav.section-menu { background: #111; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
-    nav.section-menu ul { list-style: none; padding: 0; margin: 0; }
-    nav.section-menu li { margin: 0.5em 0; }
-    h1, h2 { color: #fff; }
-    h2 { margin-top: 1.5em; }
-    p { line-height: 1.6; margin: 0.8em 0; color: #ccc; }
-    code { background: #111; padding: 0.2em 0.4em; border-radius: 4px; color: #1e90ff; }
-    pre { background: #111; padding: 1em; border-radius: 4px; overflow-x: auto; color: #ccc; }
-    .main-menu{ text-align: center;}
-  </style>
+  <script>
+    (function loadCSS() {
+      const ts = Date.now();
+      const link = document.createElement('link');
+      link.rel  = 'stylesheet';
+      link.href = `default.css?cb=${ts}`;
+      document.head.appendChild(link);
+    })();
+  </script>
 </head>
 <body>
   <div class="container">
-    <nav class="main-menu">
-      <a href="index.html">Recherche classique</a>
-      <a href="questions.html">Recherche de questions</a>
-      <a href="about.html">À propos</a>
+    <nav role="navigation" aria-label="Menu principal">
+      <ul class="main-menu">
+        <li><a href="index.html">Recherche classique</a></li>
+        <li><a href="questions.html">Recherche de questions</a></li>
+        <li><a href="about.html" aria-current="page">À propos</a></li>
+      </ul>
     </nav>
 
     <h1>À propos de Petit Poussin Musclé</h1>
