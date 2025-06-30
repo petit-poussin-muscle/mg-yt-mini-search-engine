@@ -146,9 +146,6 @@
       function groupBy(arr, keyFn) {
         return arr.reduce((m,x)=>{ const k = keyFn(x.at); (m[k]=m[k]||[]).push(x.duration); return m; }, {});
       }
-      function tooltipText(date, value, dayjsDate) {
-          return (value || 0) + ' vidéo(s) - ' + dayjsDate.format('LL');
-      }
 
       const summary = {}, sources = {}, allDocs = [];
       let lastUpdate = null;
@@ -215,7 +212,7 @@
               },
               {
                 type: 'bar',
-                label: 'Nombre de vidéos',
+                label: src === 'live'? 'Nombre de lives' : 'Nombre de vidéos',
                 data: arr.map(x=>x.count),
                 yAxisID: 'y-count',
                 backgroundColor: 'rgb(102, 102, 170, 0.9)'
@@ -228,7 +225,7 @@
             scales: {
               'y-count': {
                 type: 'linear', position: 'left', beginAtZero: true,
-                title: { display: true, text: 'Nombre de vidéos' }
+                title: { display: true, text: src === 'live'? 'Nombre de lives' : 'Nombre de vidéos' }
               },
               'y-duration': {
                 type: 'linear', position: 'right', beginAtZero: true,
@@ -242,7 +239,7 @@
             plugins: {
               legend: { position: 'top' },
               tooltip: {
-                callbacks: { label: ctx => ctx.dataset.type === 'line' ? ctx.parsed.y + 'h': ctx.parsed.y + 'vidéos'}
+                callbacks: { label: ctx => ctx.dataset.type === 'line' ? ctx.parsed.y + 'h': src === 'live'? ctx.parsed.y + ' live' + (ctx.parsed.y > 1? 's':'') : ctx.parsed.y + ' vidéo' + (ctx.parsed.y > 1? 's':'')}
               }
             }
           }
