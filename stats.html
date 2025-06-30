@@ -1,0 +1,287 @@
+---
+---
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Petit Poussin Musclé - Statistiques Musclé</title>
+    <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
+    <link rel="stylesheet" href="default.css?rev={{ site.time | date: '%Y%m%d%H%M%S' }}">
+
+    <link rel="stylesheet" href="https://unpkg.com/cal-heatmap/dist/cal-heatmap.css"/>
+    <style>
+      #cal-heatmap { max-width: 1000px; margin: auto; }
+      body [data-theme="dark"] .ch-subdomain-bg {fill: #333}
+      canvas { max-width: 800px; margin: auto; display: block; }
+      .chart-container { width: 800px; margin: 30px auto; position: relative; }
+      .chart-container canvas { width: 100% !important; }
+
+      #summary-table { text-align: center; border: 1px solid #333; padding: 0; margin: 0;}
+      #summary-table th, #summary-table td {border: 1px solid #333;padding: 0; margin: 0;}
+      text.ch-subdomain-text {font-size: 10px;}
+      svg.ch-domain text.ch-domain-text {font-size: 14px;}
+      table { border-collapse: collapse; width: 100%; max-width: 800px; margin-bottom: 2em; }
+      th, td { border: 1px solid #444; padding: 8px 12px; text-align: left; background-color: #111; color: #eee;}
+      thead th { background: #222; text-align: center; }
+      thead th:first-child { background: #111; text-align: left; }
+
+      #cal-heatmap-2024, #cal-heatmap-2025 { width: 800px; height: 200px; margin: 30px auto;}
+      #heatmap-legend { width: 800px; margin: 0 auto; display: flex; justify-content: center; font-size: 0.9em; color: #ccc;}
+      #summary-table { border: 1px solid #444; background-color: #111; color: #eee; margin-bottom: 2em; }
+      #summary-table th, #summary-table td { border: 1px solid #444; padding: 10px; }
+      #summary-table thead th { background-color: #222; text-align: center; }
+      #summary-table thead th:first-child { background-color: #111; text-align: left; }
+      #summary-table tbody tr:nth-child(even) td { background-color: #1a1a1a; }
+      #summary-table tbody td {text-align: center;}
+
+      .section-menu > ul > li:not(:last-child) { padding-bottom: 0.5em; }
+      .section-menu > ul > li > ul > li::before { content: "→"; padding-left: 1em; padding-right: 0.5em; }
+    </style>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js-stats/cal-heatmap.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="js-stats/Legend.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      
+  </head>
+  <body>
+    <div class="container">
+      <nav role="navigation" aria-label="Menu principal">
+        <ul class="main-menu">
+          <li><a href="index.html">Recherche classique</a></li>
+          <li><a href="questions.html">Recherche de questions</a></li>
+          <li><a href="stats.html" aria-current="page">Statistiques</a></li>
+          <li><a href="about.html">À propos</a></li>
+        </ul>
+      </nav>
+
+      <nav class="section-menu">
+        <ul>
+          <li><a href="#qui">Statistiques globales</a></li>
+          <li><a href="#frequency">Nombre de vidéos publiées par jour</a>
+            <ul>
+              <li><a href="#frequency-2024">2024</a></li>
+              <li><a href="#frequency-2025">2025</a></li>
+              <li><a href="#legend">Légende</a></li>
+            </ul>
+          </li>
+          <li><a href="#weekly-annual">Statistiques Hebdomadaire & Annuelles</a>
+            <ul>
+              <li><a href="#weekly-live">Statistiques Hebdomadaire - Lives</a></li>
+              <li><a href="#weekly-video">Statistiques Hebdomadaire - Vidéos Classiques</a></li>
+              <li><a href="#weekly-all">Statistiques Hebdomadaire - Toutes Vidéos</a></li>
+              <li><a href="#annual-live">Statistiques Annuelles - Lives</a></li>
+              <li><a href="#annual-video">Statistiques Annuelles - Vidéos Classiques</a></li>
+              <li><a href="#annual-all">Statistiques Annuelles - Toutes Vidéos</a></li> 
+            </ul>
+          </li>
+          <li><a href="#about">À Propos de ces statistiques</a></li>
+        </ul>
+      </nav>
+
+      <h1>Statistiques globales</h1>
+      <table id="summary-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Lives</th>
+            <th>Vidéos classiques</th>
+            <th>Toutes vidéos</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h1 id="frequency">Nombre de vidéos publiées par jour</h1>
+      <h2 id="frequency-2024">2024</h2>
+      <div id="cal-heatmap-2024"></div>
+      <h2 id="frequency-2025">2025</h2>
+      <div id="cal-heatmap-2025-H1"></div>
+      <div id="cal-heatmap-2025-H2"></div>
+      <h2 id="legend">Légende - Nombre de vidéos</h2>
+      <div id="heatmap-legend"></div>
+      <h1 id="weekly-annual">Statistiques Hebdomadaire & Annuelles</h1>
+      <div id="charts"></div>
+      <h1 id="about">À propos de ces statistiques</h1>
+      <p>
+        Seules les vidéos réservées aux membres sont comptabilisées.<br>
+        Les données des vidéos, notamment les dates, sont basées sur la première date de mise en ligne et/ou de publication ; il peut donc y avoir un léger décalage dans le nombre de vidéos pour un jour donné.<br>
+        Les statistiques ne prennent en compte que les vidéos mises en ligne à partir de novembre 2024 ; les vidéos mises en ligne avant cette date, ainsi que les rediffusions, sont ignorées.
+      </p>
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const files = [
+        { path: "data/index-live-min.json", key: "live" },
+        { path: "data/index-nonlive-min.json", key: "nonlive" }
+      ];
+      const cutoff = new Date(2024, 10, 1);
+      function formatDuration(sec) {
+        const d = Math.floor(sec/86400); sec %= 86400;
+        const h = Math.floor(sec/3600);  sec %= 3600;
+        const m = Math.floor(sec/60);
+        const s = sec % 60;
+        return [d? d+"j":"", h? h+"h":"",m? m+"m":"",s? s+"s": ""].filter(Boolean).join(" ");
+      }
+      function computeStats(arr) {
+        arr.sort((a,b)=>a-b);
+        const N = arr.length;
+        const sum = arr.reduce((a,v)=>a+v,0);
+        const mean = N? Math.round(sum/N):0;
+        const median = N? (N%2? arr[(N-1)/2] : Math.round((arr[N/2-1]+arr[N/2])/2)) : 0;
+        return { N, sum, mean, median, min: N? arr[0]:0, max: N? arr[N-1]:0 };
+      }
+      function getISOWeekKey(d) {
+        const dt = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+        const day = dt.getUTCDay()||7;
+        dt.setUTCDate(dt.getUTCDate()+4-day);
+        const yearStart = new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil(( (dt-yearStart)/86400000 +1)/7);
+        let year = dt.getUTCFullYear();
+        let weekStr = weekNo < 10 ? '0' + weekNo : weekNo;
+        return year + ' Sem. ' + weekStr
+      }
+      function groupBy(arr, keyFn) {
+        return arr.reduce((m,x)=>{ const k = keyFn(x.at); (m[k]=m[k]||[]).push(x.duration); return m; }, {});
+      }
+      function tooltipText(date, value, dayjsDate) {
+          return (value || 0) + ' vidéo(s) - ' + dayjsDate.format('LL');
+      }
+
+      const summary = {}, sources = {}, allDocs = [];
+      let lastUpdate = null;
+      for(const f of files) {
+        let json;
+        try { json = await (await fetch(f.path, { cache: 'no-store' })).json(); } catch { json = {updated:null,docs:[]}; }
+        const upd = json.updated? new Date(json.updated): null;
+        if(upd && (!lastUpdate||upd>lastUpdate)) lastUpdate=upd;
+        const docs = (json.docs||[]).map(d=>({at:new Date(d.at),duration:+d.d})).filter(x=>x.at>=cutoff);
+        sources[f.key]=docs; allDocs.push(...docs);
+        summary[f.key] = { updated: upd? upd.toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'}): '—', ...computeStats(docs.map(x=>x.duration)) };
+      }
+      summary.all = { updated: lastUpdate? lastUpdate.toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'}): '—', ...computeStats(allDocs.map(x=>x.duration)) };
+      sources.all = allDocs;
+
+      // Render summary
+      const rows = [['Mise à jour','updated'],['Total vidéos','N'],['Durée totale','sum'],['Moyenne','mean'],['Médiane','median'],['Durée min','min'],['Durée max','max']];
+      const tbody = document.querySelector('#summary-table tbody');
+      rows.forEach(([label,key])=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML =
+          `<th>${label}</th>`+
+          `<td>${key==='updated'? summary.live.updated: key==='N'? summary.live[key]: formatDuration(summary.live[key])}</td>`+
+          `<td>${key==='updated'? summary.nonlive.updated: key==='N'? summary.nonlive[key]: formatDuration(summary.nonlive[key])}</td>`+
+          `<td>${key==='updated'? summary.all.updated: key==='N'? summary.all[key]: formatDuration(summary.all[key])}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Charts
+      const configs = [
+        {src:'live', period:'weekly', keyFn:getISOWeekKey, title:'<span id="weekly-live">Statistiques Hebdomadaire - Lives</span>'},
+        {src:'nonlive', period:'weekly', keyFn:getISOWeekKey, title:'<span id="weekly-video">Statistiques Hebdomadaire - Vidéos Classiques</span>'},
+        {src:'all', period:'weekly', keyFn:getISOWeekKey, title:'<span id="weekly-all">Statistiques Hebdomadaire - Toutes Vidéos</span>'},
+        {src:'live', period:'annual', keyFn:d=>d.getFullYear(), title:'<span id="annual-live">Statistiques Annuelles - Lives</span>'},
+        {src:'nonlive', period:'annual', keyFn:d=>d.getFullYear(), title:'<span id="annual-video">Statistiques Annuelles - Vidéos Classiques</span>'},
+        {src:'all', period:'annual', keyFn:d=>d.getFullYear(), title:'<span id="annual-all">Statistiques Annuelles - Toutes Vidéos</span>'}
+      ];
+      
+      configs.forEach(({src,period,keyFn,title})=>{
+        const docs = sources[src]||[];
+        const map = groupBy(docs,keyFn);
+        const arr = Object.keys(map).sort().map(k=>({period:k, count:map[k].length, totalH:+(map[k].reduce((s,v)=>s+v,0)/3600).toFixed(2)}));
+
+        const container = document.createElement('div');
+        container.className = 'chart-container';
+        const h3 = document.createElement('h3'); h3.innerHTML = title;
+        const canvas = document.createElement('canvas');
+        container.append(h3, canvas);
+        document.getElementById('charts').append(container);
+
+        new Chart(canvas.getContext('2d'), {
+          data: {
+            labels: arr.map(x=>x.period),
+            datasets: [
+              {
+                type: 'line',
+                label: 'Durée totale (h)',
+                data: arr.map(x=>x.totalH),
+                yAxisID: 'y-duration',
+                borderColor: 'rgb(187, 187, 255, 1)',
+                backgroundColor: 'rgb(187, 187, 255, 0.2)',
+                fill: false,
+                tension: 0.2
+              },
+              {
+                type: 'bar',
+                label: 'Nombre de vidéos',
+                data: arr.map(x=>x.count),
+                yAxisID: 'y-count',
+                backgroundColor: 'rgb(102, 102, 170, 0.9)'
+              }
+
+            ]
+          },
+          options: {
+            responsive: false,
+            scales: {
+              'y-count': {
+                type: 'linear', position: 'left', beginAtZero: true,
+                title: { display: true, text: 'Nombre de vidéos' }
+              },
+              'y-duration': {
+                type: 'linear', position: 'right', beginAtZero: true,
+                grid: { drawOnChartArea: false },
+                title: { display: true, text: 'Durée (h)' }
+              },
+              x: {
+                title: { display: true, text: period === 'weekly' ? 'Semaine' : 'Année' }
+              }
+            },
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: { label: ctx => ctx.dataset.type === 'line' ? ctx.parsed.y + 'h': ctx.parsed.y + 'vidéos'}
+              }
+            }
+          }
+        });
+      });
+
+      // Cal-Heatmaps
+      const dailyCounts = {};
+      allDocs.forEach(({at})=>{
+        const ts = Date.UTC(at.getFullYear(), at.getMonth(), at.getDate()) / 1000;
+        dailyCounts[ts] = (dailyCounts[ts] || 0) + 1;
+      });
+      const dataArr = Object.entries(dailyCounts).map(([s,v])=>({t:+s*1000, v}));
+
+      async function drawCal(selector, start, range) {
+        const cal = new CalHeatmap();
+        await cal.paint({
+          itemSelector: selector,
+          theme: 'dark',
+          data: { source: dataArr, x: 't', y: 'v' },
+          date: { start: new Date(start), locale: 'fr' },
+          domain: { type: 'month', padding: [5,5,5,5] },
+          subDomain: { type: 'day', width: 20, height: 20, gutter: 2, radius: 2, label: (t,v)=>v },
+          range,
+          scale: {
+            color: {
+              type: 'quantile',
+              domain: [0, 12],
+              range: ['#004','#115','#226','#337','#448','#559','#66A','#77B','#88C','#99D','#AAE','#BBF']
+            }
+          },
+          timezone: 'Europe/Paris'
+        }, [[Legend, { itemSelector: '#heatmap-legend', width: 800, includeBlank: true }]]);
+      }
+      await drawCal('#cal-heatmap-2024', '2024-11-01', 3);
+      await drawCal('#cal-heatmap-2025-H1', '2025-01-01', 6);
+      await drawCal('#cal-heatmap-2025-H2', '2025-07-01', 6);
+        
+    });
+
+  </script>
+</html>
