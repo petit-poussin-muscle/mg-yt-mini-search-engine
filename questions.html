@@ -41,15 +41,45 @@
   </div>
 
   <script>
-    // Chargement date et compteur pour questions
-    fetch('data/questions-min.json', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(data => {
-        const d = new Date(data.updated);
+    // list the files to merge; set cache: false when you want no-store (e.g. 2025)
+    const files = [
+      { path: 'data/questions-2024-min.json', cache: true },
+      { path: 'data/questions-2025-min.json', cache: false }
+    ];
+
+    async function fetchJsonSafe(path, opts) {
+      try {
+        const res = opts ? await fetch(path, opts) : await fetch(path);
+        if (!res.ok) return { updated: null, docs: [] };
+        return await res.json();
+      } catch (e) {
+        return { updated: null, docs: [] };
+      }
+    }
+
+    (async () => {
+      let mergedDocs = [];
+      let lastUpdate = null;
+
+      for (const f of files) {
+        const opts = (f.cache === false) ? { cache: 'no-store' } : undefined;
+        const json = await fetchJsonSafe(f.path, opts);
+        if (Array.isArray(json.docs)) mergedDocs.push(...json.docs);
+        if (json.updated) {
+          const u = new Date(json.updated);
+          if (!lastUpdate || u > lastUpdate) lastUpdate = u;
+        }
+      }
+
+      if (lastUpdate) {
         document.getElementById('updated-date').textContent =
-          d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-        document.getElementById('video-count').textContent = data.docs.length;
-      });
+          lastUpdate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      } else {
+        document.getElementById('updated-date').textContent = '—';
+      }
+
+      document.getElementById('video-count').textContent = mergedDocs.length;
+    })();
   </script>
   <script src="questions-search.js?rev={{ site.time | date: '%Y%m%d%H%M%S' }}" defer></script>
 </body>

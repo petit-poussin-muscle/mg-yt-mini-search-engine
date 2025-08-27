@@ -69,11 +69,44 @@
   </div>
 
   <script>
-    // Charger mises à jour et compteur à partir des deux JSON et calculer la date la plus récente
-    Promise.all([
-      fetch('data/index-live-min.json', { cache: 'no-store' }).then(r => r.json()),
-      fetch('data/index-nonlive-min.json', { cache: 'no-store' }).then(r => r.json())
-    ]).then(([liveData, nonliveData]) => {
+    // list of files with cache hint (cache: false -> use { cache: 'no-store' })
+    const files = [
+      { path: "data/index-live-2024-min.json",  key: "live",    cache: true },
+      { path: "data/index-nonlive-2024-min.json", key: "nonlive", cache: true },
+      { path: "data/index-live-2025-min.json",  key: "live",    cache: false },
+      { path: "data/index-nonlive-2025-min.json", key: "nonlive", cache: false }
+    ];
+
+    // perform all fetches according to the files array
+    Promise.all(
+      files.map(f => {
+        const opts = (f.cache === false) ? { cache: 'no-store' } : undefined;
+        return opts ? fetch(f.path, opts).then(r => r.json()) : fetch(f.path).then(r => r.json());
+      })
+    ).then(results => {
+      // group results by key and merge docs + find latest updated per key
+      const grouped = {};
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const json = results[i] || { updated: null, docs: [] };
+        if (!grouped[f.key]) grouped[f.key] = { docsRaw: [], updatedTimes: [] };
+
+        if (Array.isArray(json.docs)) grouped[f.key].docsRaw.push(...json.docs);
+        if (json.updated) grouped[f.key].updatedTimes.push(new Date(json.updated).getTime());
+      }
+
+      function buildMerged(key) {
+        const bucket = grouped[key] || { docsRaw: [], updatedTimes: [] };
+        // fallback to epoch if no update timestamps found (keeps same behavior as before)
+        const latestTs = bucket.updatedTimes.length ? Math.max(...bucket.updatedTimes) : new Date(0).getTime();
+        const latestISO = new Date(latestTs).toISOString();
+        return { docs: bucket.docsRaw, updated: latestISO };
+      }
+
+      const liveData = buildMerged('live');
+      const nonliveData = buildMerged('nonlive');
+
+      // keep your original structure
       const dateLive = new Date(liveData.updated);
       const dateNon = new Date(nonliveData.updated);
       const latest = dateLive > dateNon ? dateLive : dateNon;

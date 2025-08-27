@@ -26,10 +26,52 @@ function formatDuration(sec) {
 
 // Initialisation : chargement des données et écouteurs
 async function init() {
-  const [liveData, nonliveData] = await Promise.all([
-    fetch('data/index-live-min.json', { cache: 'no-store' }).then(r => r.json()),
-    fetch('data/index-nonlive-min.json', { cache: 'no-store' }).then(r => r.json())
-  ]);
+    const files = [
+    { path: "data/index-live-2024-min.json",     key: "live",    cache: true },
+    { path: "data/index-nonlive-2024-min.json",  key: "nonlive", cache: true },
+    { path: "data/index-live-2025-min.json",     key: "live",    cache: false },
+    { path: "data/index-nonlive-2025-min.json",  key: "nonlive", cache: false }
+  ];
+
+  // safe fetch helper (minimal)
+  async function fetchJsonSafe(path, opts) {
+    try {
+      const res = opts ? await fetch(path, opts) : await fetch(path);
+      if (!res.ok) return { updated: null, docs: [] };
+      return await res.json();
+    } catch (e) {
+      return { updated: null, docs: [] };
+    }
+  }
+
+  // group incoming files by their key and merge docs + pick latest updated
+  const grouped = {};
+  let globalLastUpdate = null;
+
+  for (const f of files) {
+    const opts = (f.cache === false) ? { cache: 'no-store' } : undefined;
+    const json = await fetchJsonSafe(f.path, opts);
+
+    if (!grouped[f.key]) grouped[f.key] = { docsRaw: [], lastUpdated: null };
+
+    if (Array.isArray(json.docs)) grouped[f.key].docsRaw.push(...json.docs);
+
+    if (json.updated) {
+      const u = new Date(json.updated);
+      if (!grouped[f.key].lastUpdated || u > grouped[f.key].lastUpdated) grouped[f.key].lastUpdated = u;
+      if (!globalLastUpdate || u > globalLastUpdate) globalLastUpdate = u;
+    }
+  }
+
+  // build objects compatible with your original code (liveData / nonliveData)
+  const liveData = {
+    updated: grouped.live?.lastUpdated ? grouped.live.lastUpdated.toISOString() : undefined,
+    docs: grouped.live?.docsRaw || []
+  };
+  const nonliveData = {
+    updated: grouped.nonlive?.lastUpdated ? grouped.nonlive.lastUpdated.toISOString() : undefined,
+    docs: grouped.nonlive?.docsRaw || []
+  };
 
   docs = [
     ...liveData.docs.map(doc => ({ ...doc, live: true })),

@@ -114,8 +114,10 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const files = [
-        { path: "data/index-live-min.json", key: "live" },
-        { path: "data/index-nonlive-min.json", key: "nonlive" }
+        { path: "data/index-live-2024-min.json", key: "live", cache: true },
+        { path: "data/index-nonlive-2024-min.json", key: "nonlive", cache: true },
+        { path: "data/index-live-2025-min.json", key: "live", cache: false },
+        { path: "data/index-nonlive-2025-min.json", key: "nonlive", cache: false }
       ];
       const cutoff = new Date(2024, 10, 1);
       function formatDuration(sec) {
@@ -149,15 +151,42 @@
 
       const summary = {}, sources = {}, allDocs = [];
       let lastUpdate = null;
+
+      // track lastUpdated per key (to compute merged summary.updated)
+      const keyLastUpdated = {};
+
       for(const f of files) {
         let json;
-        try { json = await (await fetch(f.path, { cache: 'no-store' })).json(); } catch { json = {updated:null,docs:[]}; }
+        try {
+          const opts = (f.cache === false) ? { cache: 'no-store' } : undefined;
+          json = opts ? await (await fetch(f.path, opts)).json() : await (await fetch(f.path)).json();
+        } catch {
+          json = {updated:null,docs:[]};
+        }
+
         const upd = json.updated? new Date(json.updated): null;
-        if(upd && (!lastUpdate||upd>lastUpdate)) lastUpdate=upd;
+        if (upd) {
+          if(!keyLastUpdated[f.key] || upd > keyLastUpdated[f.key]) keyLastUpdated[f.key] = upd;
+          if(!lastUpdate || upd > lastUpdate) lastUpdate = upd;
+        }
+
         const docs = (json.docs||[]).map(d=>({at:new Date(d.at),duration:+d.d})).filter(x=>x.at>=cutoff);
-        sources[f.key]=docs; allDocs.push(...docs);
-        summary[f.key] = { updated: upd? upd.toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'}): '—', ...computeStats(docs.map(x=>x.duration)) };
+
+        // merge docs for same key (append instead of overwrite)
+        if (!sources[f.key]) sources[f.key] = [];
+        sources[f.key].push(...docs);
+        allDocs.push(...docs);
+        // NOTE: do NOT compute summary[f.key] here — we'll compute summary from the merged array below
       }
+
+      // compute per-key summaries from the merged sources (preserves your original formatting & computeStats)
+      for (const key of Object.keys(sources)) {
+        summary[key] = {
+          updated: keyLastUpdated[key] ? keyLastUpdated[key].toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'}) : '—',
+          ...computeStats(sources[key].map(x => x.duration))
+        };
+      }
+
       summary.all = { updated: lastUpdate? lastUpdate.toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'}): '—', ...computeStats(allDocs.map(x=>x.duration)) };
       sources.all = allDocs;
 
@@ -274,10 +303,11 @@
           timezone: 'Europe/Paris'
         }, [[Legend, { itemSelector: '#heatmap-legend', width: 800, includeBlank: true }]]);
       }
-      await drawCal('#cal-heatmap-2024', '2024-11-01', 3);
+      await drawCal('#cal-heatmap-2024', '2024-10-01', 3);
       await drawCal('#cal-heatmap-2025-H1', '2025-01-01', 6);
       await drawCal('#cal-heatmap-2025-H2', '2025-07-01', 6);
         
     });
+
   </script>
 </html>

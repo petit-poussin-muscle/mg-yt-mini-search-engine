@@ -24,7 +24,41 @@ function formatDuration(sec) {
 
 // Initialisation : chargement des données et écouteurs
 async function init() {
-  const payload = await fetch('data/questions-min.json', { cache: 'no-store' }).then(r => r.json());
+    // list the files you want to merge (add 2026, 2027... as needed)
+  const files = [
+    { path: 'data/questions-2024-min.json', cache: true },
+    { path: 'data/questions-2025-min.json', cache: false }
+  ];
+
+  // safe fetch helper (accepts optional fetch options)
+  async function fetchJsonSafe(path, opts) {
+    try {
+      const res = opts ? await fetch(path, opts) : await fetch(path);
+      if (!res.ok) return { updated: null, docs: [] };
+      return await res.json();
+    } catch (e) {
+      return { updated: null, docs: [] };
+    }
+  }
+
+  // merge files: concat docs and keep the latest updated timestamp
+  let mergedDocs = [];
+  let lastUpdate = null;
+  for (const f of files) {
+    const opts = (f.cache === false) ? { cache: 'no-store' } : undefined;
+    const json = await fetchJsonSafe(f.path, opts);
+    if (Array.isArray(json.docs)) mergedDocs.push(...json.docs);
+    if (json.updated) {
+      const u = new Date(json.updated);
+      if (!lastUpdate || u > lastUpdate) lastUpdate = u;
+    }
+  }
+
+  // build payload-like object (similar shape to original single-file payload)
+  const payload = {
+    updated: lastUpdate ? lastUpdate.toISOString() : undefined,
+    docs: mergedDocs
+  };
 
   // Préparation des docs pour la recherche
   docs = payload.docs.map(doc => ({
