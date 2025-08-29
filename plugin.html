@@ -1,0 +1,86 @@
+---
+---
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Petit Poussin Musclé - À propos</title>
+  <link rel="icon" href="/mg-yt-mini-search-engine/favicon.ico" type="image/png">
+  <link rel="stylesheet" href="default.css?rev={{ site.time | date: '%Y%m%d%H%M%S' }}">
+</head>
+<body>
+  <div class="container">
+    <nav role="navigation" aria-label="Menu principal">
+      <ul class="main-menu">
+        <li><a href="index.html">Recherche classique</a></li>
+        <li><a href="questions.html">Recherche de questions</a></li>
+        <li><a href="stats.html">Statistiques</a></li>
+        <li><a href="about.html">À propos</a></li>
+        <li><a href="plugin.html" aria-current="page">Extension de navigateur</a></li>
+      </ul>
+    </nav>
+
+    <h1>Extension de navigateur: Youtube Filter Video</h1>
+
+    <p>
+        Avec la récente mise à jour de YouTube, il n’est plus possible de distinguer les vidéos réservées aux membres. 
+        C’est pourquoi cette extension de navigateur a été créée&nbsp;: elle permet de filtrer les vidéos directement sur les chaînes des créateurs.
+    </p>
+
+    <p>
+        Sur les onglets <strong>Vidéos</strong>, <strong>Shorts</strong> et <strong>En direct</strong>, un petit panneau s’affiche en haut de la page, 
+        offrant trois options de filtrage :
+    </p>
+
+    <ul>
+        <li><strong>All</strong> : toutes les vidéos</li>
+        <li><strong>Non-members</strong> : uniquement les vidéos accessibles aux non-membres</li>
+        <li><strong>Members-only</strong> : uniquement les vidéos réservées aux membres</li>
+    </ul>
+
+    <img src="plugin/videos_all.png" width="380">
+    <img src="plugin/videos_non_members.png" width="380">
+    <img src="plugin/videos_members_only.png" width="380">
+
+    <p>
+        L’extension a été testée sur <strong>Chrome</strong> et <strong>Firefox</strong>, 
+        mais elle devrait également fonctionner avec d’autres navigateurs basés sur Chromium comme <strong>Edge</strong> ou <strong>Opera</strong>. 
+        Cependant, leur procédure d’installation n’est pas détaillée ici.
+    </p>
+
+    <p>
+        ⚠️ Cette extension n’est pas disponible via les Stores officiels&nbsp;: une installation manuelle est nécessaire, 
+        mais elle reste simple à effectuer.
+    </p>
+
+    <h3>Installation</h3>
+    <ol>
+        <li>Téléchargez l’extension en cliquant sur ce lien : 
+            <a href="plugin\YouTube_Filter_Video_plugin.zip">Télécharger l’extension</a>.
+        </li>
+        <li>Décompressez le fichier dans le dossier de votre choix.</li>
+        <li>
+            <strong>Chrome</strong>
+            <ul>
+                <li>Accédez à la page <code>chrome://extensions</code> dans un nouvel onglet.</li>
+                <li>Ou bien, cliquez sur l’icône puzzle du menu <strong>Extensions</strong>, puis sur <strong>Gérer les extensions</strong>.<br>
+                    Vous pouvez aussi passer par le menu Chrome → <strong>Plus d’outils</strong> → <strong>Extensions</strong>.
+                </li>
+                <li>Activez le <strong>mode développeur</strong>.</li>
+                <li>Cliquez sur <strong>Charger l’extension non empaquetée</strong> et sélectionnez le dossier où vous avez décompressé l’extension.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Firefox</strong>
+            <ul>
+                <li>Ouvrez la page <code>about:debugging</code>.</li>
+                <li>Cliquez sur <strong>Ce Firefox</strong>, puis sur <strong>Charger un module complémentaire temporaire…</strong>.</li>
+                <li>Sélectionnez n’importe quel fichier dans le dossier de l’extension.</li>
+                <li>Le module est alors installé et restera actif jusqu’au redémarrage de Firefox.<br><strong>⚠️ Il faudra donc répéter l’installation à chaque redémarrage de Firefox.</strong></li>
+            </ul>
+        </li>
+    </ol>
+
+  </div>
+</body>
+</html>

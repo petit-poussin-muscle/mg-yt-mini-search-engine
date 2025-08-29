@@ -18,7 +18,7 @@ border: 1px solid #333;; border-radius: 4px; padding: 0.5em; margin-bottom: 1em;
 .result img { width: 120px; height: 90px; object-fit: cover; margin-right: 1em; border: 1px solid #333; }
 .result p { margin: 0.2em 0 0 0; font-size: 0.9em; color: #ccc; }
 .main-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 1em; justify-content: center; align-items: center; }
-.main-menu a { display: block; padding: 0.5em 1em;}
+.main-menu a { display: block; padding: 0.5em 0.3em;}
 .main-menu a[aria-current="page"] { color: var(--primary); font-weight: bold; }
 nav[role="navigation"] { border-bottom: 2px solid rgba(255, 255, 255, 0.2); padding-bottom: 0.75em; margin-bottom: 1.5em; }
 code { background: #111; padding: 0.2em 0.4em; border-radius: 4px; color: #1e90ff; }
